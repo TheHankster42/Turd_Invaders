@@ -25,7 +25,6 @@ bullet_sound=mixer.Sound('sound/whoosh.wav')
 explosion_sound=mixer.Sound('sound/fart.wav')
 explosion_sound.set_volume(0.5)
 
-
 #title and icon
 pygame.display.set_caption("Turd Invaders")
 icon=pygame.image.load("images/poo.png")
@@ -49,7 +48,6 @@ textY=10
 #game over
 over_font = pygame.font.Font("freesansbold.ttf",64)
 
-
 #Player
 playerImg = pygame.image.load("images/toilet-paper.png")
 playerX=368
@@ -71,8 +69,6 @@ for i in range (num_of_enemies):
     enemyX.append(random.randint(0,735))
     enemyY.append(random.choice(YSPAWNLOCATIONS))
     enemyX_direction.append(1)
-
-
 
 #bullet
 bulletImg = pygame.image.load("images/burrito(1).png")
@@ -125,19 +121,28 @@ while running:
             if event.key == pygame.K_LEFT:
                 playerX_direction = -1
                 playerX_accelerating = True
-            elif event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_RIGHT:
                 playerX_direction = 1
                 playerX_accelerating = True
             if event.key == pygame.K_SPACE and bullet_state == "ready":
                 bulletX = playerX
                 fire_bullet(bulletX,bulletY)
                 bullet_sound.play()
+            if event.key == pygame.K_r and game_over:
+                game_over = False
+                saved = False
+                score_value = 0
+                playerImg = pygame.image.load("images/toilet-paper.png")
+                for i in range (num_of_enemies):
+                    enemyX[i] = random.randint(0,735)
+                    enemyY[i] = random.choice(YSPAWNLOCATIONS)
+                speed = ENEMYSPEED
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
                 playerX_direction = -1
                 playerX_accelerating = False
-            elif event.key == pygame.K_RIGHT:
+            if event.key == pygame.K_RIGHT:
                 playerX_direction = 1
                 playerX_accelerating = False
 
@@ -178,7 +183,6 @@ while running:
                     enemyY[j] = 2000
                 break
                 
-
             enemyX[i] += enemyX_direction[i]*speed
 
             if (enemyX[i] <=0) or (enemyX[i]>=736):
@@ -203,6 +207,7 @@ while running:
         d = shelve.open("score.txt")
         if "score" not in d or score_value > d["score"]:
             d["score"] = score_value
+            highscore = score_value
         d.close()
         
         saved = True
