@@ -10,6 +10,34 @@ FRICTION = 0.1
 ENEMYSPEED = 2
 ENEMYDOWNSTEP = 64
 YSPAWNLOCATIONS = [0,64,128]
+XSPAWNLOCATIONS = [64,128,192,256,320,448, 512, 576, 640, 704]
+
+def show_score(x,y):
+    score = font.render("Score : " + str(score_value),True, (0,0,0))
+    highscore_text = font.render("Highscore : " + str(highscore),True, (0,0,0))
+    screen.blit(score, (x,y))
+    screen.blit(highscore_text,(x,y+32))
+
+def game_over_text():
+    over_text = over_font.render("GAME OVER",True, (0,0,0))
+    screen.blit(over_text, (200,250))
+
+def player(x,y):
+    screen.blit(playerImg, (x,y))
+    
+def enemy(x,y,i):
+    screen.blit(enemyImg[i], (x,y))
+
+def fire_bullet(x,y):
+    global bullet_state
+    bullet_state="fire"
+    screen.blit(bulletImg, (x+16,y+10))
+
+def isCollision(enemyX,enemyY,bulletX,bulletY):
+    distance = (math.sqrt(math.pow(enemyX-bulletX,2)) + (math.pow(enemyY-bulletY,2)))
+    if distance < 64:
+        return True
+    else: return False
 
 # Intializes pygame
 pygame.init()
@@ -63,12 +91,22 @@ enemyY=[]
 enemyX_direction=[]
 speed=ENEMYSPEED
 num_of_enemies = 10
-
 for i in range (num_of_enemies):
     enemyImg.append(pygame.image.load("images/poop.png"))
-    enemyX.append(random.randint(0,735))
+    enemyX.append(random.choice(XSPAWNLOCATIONS))
     enemyY.append(random.choice(YSPAWNLOCATIONS))
     enemyX_direction.append(1)
+
+for i in range (num_of_enemies):
+    failed=True
+    while failed:
+        failed = False
+        enemyX [i] = random.choice(XSPAWNLOCATIONS)
+        enemyY [i] = random.choice(YSPAWNLOCATIONS)
+        for j in range (num_of_enemies):
+            if i != j and isCollision(enemyX[i],enemyY[i],enemyX[j],enemyY[j]):
+                failed = True
+                break
 
 #bullet
 bulletImg = pygame.image.load("images/burrito(1).png")
@@ -77,33 +115,6 @@ bulletY=480
 bulletX_change = 0
 bulletY_change = 10
 bullet_state="ready"
-
-def show_score(x,y):
-    score = font.render("Score : " + str(score_value),True, (0,0,0))
-    highscore_text = font.render("Highscore : " + str(highscore),True, (0,0,0))
-    screen.blit(score, (x,y))
-    screen.blit(highscore_text,(x,y+32))
-
-def game_over_text():
-    over_text = over_font.render("GAME OVER",True, (0,0,0))
-    screen.blit(over_text, (200,250))
-
-def player(x,y):
-    screen.blit(playerImg, (x,y))
-    
-def enemy(x,y,i):
-    screen.blit(enemyImg[i], (x,y))
-
-def fire_bullet(x,y):
-    global bullet_state
-    bullet_state="fire"
-    screen.blit(bulletImg, (x+16,y+10))
-
-def isCollision(enemyX,enemyY,bulletX,bulletY):
-    distance = (math.sqrt(math.pow(enemyX-bulletX,2)) + (math.pow(enemyY-bulletY,2)))
-    if distance < 42:
-        return True
-    else: return False
 
 # Game loop
 running = True
@@ -136,7 +147,17 @@ while running:
                 for i in range (num_of_enemies):
                     enemyX[i] = random.randint(0,735)
                     enemyY[i] = random.choice(YSPAWNLOCATIONS)
-                speed = ENEMYSPEED
+                    for i in range (num_of_enemies):
+                        failed=True
+                        while failed:
+                            failed = False
+                            enemyX [i] = random.choice(XSPAWNLOCATIONS)
+                            enemyY [i] = random.choice(YSPAWNLOCATIONS)
+                            for j in range (num_of_enemies):
+                                if i != j and isCollision(enemyX[i],enemyY[i],enemyX[j],enemyY[j]):
+                                    failed = True
+                                    speed = ENEMYSPEED
+                                    break
 
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_LEFT:
@@ -184,7 +205,7 @@ while running:
                 break
                 
             enemyX[i] += enemyX_direction[i]*speed
-
+            
             if (enemyX[i] <=0) or (enemyX[i]>=736):
                 enemyX_direction[i] *= -1
                 enemyY[i]+=64
@@ -195,13 +216,21 @@ while running:
                 bulletY=480
                 bullet_state="ready"
                 score_value += 1
-                enemyX[i]=random.randint(0,735)
+                enemyX[i]=random.choice(XSPAWNLOCATIONS)
                 enemyY[i]=random.choice(YSPAWNLOCATIONS)
                 speed += score_value * 0.01
-
+                failed=True
+                while failed:
+                    failed = False
+                    enemyX [i] = random.choice(XSPAWNLOCATIONS)
+                    enemyY [i] = random.choice(YSPAWNLOCATIONS)
+                    for j in range (num_of_enemies):
+                        if i != j and isCollision(enemyX[i],enemyY[i],enemyX[j],enemyY[j]):
+                            failed = True
+                            break
 
             enemy(enemyX[i], enemyY[i], i)
-
+            
     if game_over and not saved:
         playerImg = pygame.image.load("images/soiled-toilet-paper.png")
         d = shelve.open("score.txt")
